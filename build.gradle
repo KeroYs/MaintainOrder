@@ -1,0 +1,48 @@
+plugins {
+    id 'java'
+    id "com.github.johnrengelman.shadow" version "5.2.0"
+}
+
+group = pluginGroup
+version = pluginVersion
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+repositories {
+    mavenCentral()
+    maven {
+        name = 'sonatype'
+        url = 'https://oss.sonatype.org/content/groups/public/'
+    }
+    maven {
+        name = 'bungeecord-repo'
+        url = 'https://oss.sonatype.org/content/repositories/snapshots'
+    }
+}
+
+shadowJar {
+    baseName = 'MaintainOrder'
+    classifier = ''
+    archiveVersion = '1.2 BETA'
+
+    configurations = [project.configurations.shadow]
+}
+
+dependencies {
+    //shadow group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+    implementation 'net.md-5:bungeecord-api:1.15-SNAPSHOT'
+    implementation group: 'org.postgresql', name: 'postgresql', version: '42.2.14'
+    shadow group: 'org.postgresql', name: 'postgresql', version: '42.2.14'
+    shadow group: 'com.zaxxer', name: 'HikariCP', version: '3.4.5'
+}
+
+
+
+import org.apache.tools.ant.filters.ReplaceTokens
+
+processResources {
+    from(sourceSets.main.resources.srcDirs) {
+        filter ReplaceTokens, tokens: [version: version]
+    }
+}
