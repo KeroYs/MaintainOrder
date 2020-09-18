@@ -19,14 +19,17 @@ public class DeleteExpiredBans extends Thread {
 
     @Override
     public void run() {
-        while (true) {
+        boolean stopped = false;
+        while (!stopped) {
             Instant now = Instant.now();
             Instant wakeUpTime = dataBase.removeExpiredBans(serverName, now);
             long timeToSleep = getTimeToSleep(now, wakeUpTime);
 
             try {
                 sleep(timeToSleep);
-            } catch (InterruptedException ignored) {}
+            } catch (InterruptedException e) {
+                stopped = true;
+            }
         }
     }
 

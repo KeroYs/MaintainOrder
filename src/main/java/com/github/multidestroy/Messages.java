@@ -54,8 +54,6 @@ public class Messages {
         this.messageConfig = messageConfig;
         this.database = database;
         this.muteSystem = muteSystem;
-
-        reloadFromConfig();
     }
 
     public void reloadFromConfig() {

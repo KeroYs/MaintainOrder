@@ -2,6 +2,7 @@ package com.github.multidestroy.database;
 
 import com.github.multidestroy.Config;
 import com.github.multidestroy.info.*;
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -13,15 +14,18 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 
 public class Database {
 
     private final Config config;
     private DataSource dataSource;
-    private PlayerRank playerRank;
+    private final PlayerRank playerRank;
+    private boolean connected;
 
     public Database(Config config, PlayerRank playerRank) {
+        this.connected = false;
         this.config = config;
         this.playerRank = playerRank;
         try {
@@ -31,8 +35,22 @@ public class Database {
         }
     }
 
-    public void reloadDataSource() {
-        dataSource = new DataSource(config);
+    public boolean isConnected() {
+        return connected;
+    }
+
+    public boolean reloadDataSource() {
+        try {
+            dataSource = new DataSource(config);
+            return connected = true;
+        } catch (Exception e) {
+            Logger logger = ProxyServer.getInstance().getLogger();
+            logger.severe(ChatColor.GOLD + "*********************************************************************************************");
+            logger.severe(ChatColor.RED + "DataBase is not connected! Try to correct database values in plugins/MaintainOrder/config.yml");
+            e.printStackTrace();
+            logger.severe(ChatColor.GOLD + "*********************************************************************************************");
+            return connected = false;
+        }
     }
 
     public void saveDefaultTables() {
