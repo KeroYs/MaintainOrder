@@ -1,10 +1,9 @@
-package com.github.multidestroy.eventhandlers;
+package com.github.multidestroy.events.listeners;
 
 import com.github.multidestroy.Config;
 import com.github.multidestroy.Main;
 import com.github.multidestroy.database.Database;
 import com.github.multidestroy.Messages;
-import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -13,7 +12,6 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.PreLoginEvent;
 import net.md_5.bungee.api.event.ServerConnectEvent;
 import net.md_5.bungee.api.plugin.Listener;
-import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.event.EventHandler;
 
 import java.net.InetSocketAddress;

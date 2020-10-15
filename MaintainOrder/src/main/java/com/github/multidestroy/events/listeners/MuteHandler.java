@@ -1,4 +1,4 @@
-package com.github.multidestroy.eventhandlers.listeners;
+package com.github.multidestroy.events.listeners;
 
 import com.github.multidestroy.Messages;
 import com.github.multidestroy.MuteSystem;
