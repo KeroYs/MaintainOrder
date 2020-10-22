@@ -3,9 +3,10 @@ package com.github.multidestroy.commands.mute;
 import com.github.multidestroy.*;
 import com.github.multidestroy.commands.assets.CommandPermissions;
 
+import com.github.multidestroy.i18n.Messages;
+import com.github.multidestroy.i18n.SpecialType;
+import com.github.multidestroy.i18n.SpecialTypeInfo;
 import net.md_5.bungee.api.*;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -16,14 +17,12 @@ public class MuteChat extends Command {
     private final MuteSystem muteSystem;
     private final Messages messages;
     private final Config config;
-    private final Config notificationsConfig;
 
-    public MuteChat(MuteSystem muteSystem, Messages messages, Config config, Config notificationsConfig) {
+    public MuteChat(MuteSystem muteSystem, Messages messages, Config config) {
         super("mutechat", CommandPermissions.mutechat);
         this.muteSystem = muteSystem;
         this.messages = messages;
         this.config = config;
-        this.notificationsConfig = notificationsConfig;
     }
 
     @Override
@@ -34,17 +33,20 @@ public class MuteChat extends Command {
         if (sender instanceof ProxiedPlayer) {
             //Player
             correctUsage =
-                    Utils.createHoverEvent_OneDesc(notificationsConfig, "commands.mutechat.hover_event", "commands.mutechat.game_correct_usage");
+                    Utils.createHoverEvent(
+                            messages.getString("NORMAL.COMMAND.MUTECHAT.GAME_CORRECT_USAGE"),
+                            messages.getString("NORMAL.COMMAND.MUTECHAT.HOVER_EVENT")
+                    );
             server = ((ProxiedPlayer) sender).getServer().getInfo();
             statusIndex = 0;
         } else {
             //Console
             correctUsage =
-                    Utils.createHoverEvent_OneDesc(notificationsConfig, "commands.mutechat.hover_event", "commands.mutechat.console_correct_usage");
+                    new TextComponent(messages.getString("NORMAL.COMMAND.MUTECHAT.CONSOLE_CORRECT_USAGE"));
             if (args.length != 0) {
                 server = ProxyServer.getInstance().getServers().get(args[0]);
                 if (server == null) {
-                    sender.sendMessage(TextComponent.fromLegacyText(notificationsConfig.get().getString("bad_usage.wrong_server_name")));
+                    sender.sendMessage(TextComponent.fromLegacyText(messages.getString("NORMAL.INCORRECT_USAGE.WRONG_SERVER_NAME")));
                     return;
                 }
                 statusIndex = 1;
@@ -54,12 +56,24 @@ public class MuteChat extends Command {
                 return;
             }
         }
+
+        SpecialTypeInfo specialTypeInfo = new SpecialTypeInfo();
+        {
+            specialTypeInfo.setGiver(sender.getName());
+        }
+
         switch (start(sender, args, statusIndex, server, correctUsage)) {
             case 0:
-                Utils.sendGlobalMessage(server, messages.getMuteChatOFF(sender.getName()));
+                Utils.sendGlobalMessage(server, TextComponent.fromLegacyText(messages.getSpecialMessage(
+                        SpecialType.COMMAND_MUTECHAT_OFF,
+                        specialTypeInfo
+                )));
                 break;
             case 1:
-                Utils.sendGlobalMessage(server, messages.getMuteChatON(sender.getName()));
+                Utils.sendGlobalMessage(server, TextComponent.fromLegacyText(messages.getSpecialMessage(
+                        SpecialType.COMMAND_MUTECHAT_ON,
+                        specialTypeInfo
+                )));
                 break;
         }
         SoundChannel.sendServerSound(server, config.get().getString("sound.mutechat"));
@@ -78,14 +92,14 @@ public class MuteChat extends Command {
             String status = args[statusIndex];
             if (status.equalsIgnoreCase("on")) {
                 if(muteSystem.getChatStatus(server)) {
-                    sender.sendMessage(TextComponent.fromLegacyText(notificationsConfig.get().getString("commands.mutechat.same_status")));
+                    sender.sendMessage(TextComponent.fromLegacyText(messages.getString("NORMAL.COMMAND.MUTECHAT.SAME_STATUS")));
                     return -1;
                 }
                 muteSystem.setChatStatus(server, true);
                 return 1;
             } else if (status.equalsIgnoreCase("off")) {
                 if(!muteSystem.getChatStatus(server)) {
-                    sender.sendMessage(TextComponent.fromLegacyText(notificationsConfig.get().getString("commands.mutechat.same_status")));
+                    sender.sendMessage(TextComponent.fromLegacyText(messages.getString("NORMAL.COMMAND.MUTECHAT.SAME_STATUS")));
                     return -1;
                 }
                 muteSystem.setChatStatus(server, false);

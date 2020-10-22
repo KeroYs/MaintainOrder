@@ -1,6 +1,6 @@
 package com.github.multidestroy.commands.assets;
 
-import com.github.multidestroy.Config;
+import com.github.multidestroy.i18n.Messages;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.TextComponent;
 
@@ -9,10 +9,10 @@ import java.util.concurrent.TimeUnit;
 
 public abstract class CommandCreator {
 
-    protected Config notificationsConfig;
+    protected Messages messages;
 
-    public CommandCreator(Config notificationsConfig) {
-        this.notificationsConfig = notificationsConfig;
+    public CommandCreator(Messages messages) {
+        this.messages = messages;
     }
 
     public abstract void sendCorrectTimeValues(CommandSender sender, char type);

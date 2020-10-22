@@ -1,12 +1,12 @@
 package com.github.multidestroy.commands.bans;
 
-import com.github.multidestroy.Config;
 import com.github.multidestroy.Main;
 import com.github.multidestroy.Utils;
 import com.github.multidestroy.commands.assets.CommandPermissions;
 import com.github.multidestroy.database.Database;
 import com.github.multidestroy.info.ModificationType;
 import com.github.multidestroy.info.BanData;
+import com.github.multidestroy.i18n.Messages;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.plugin.Command;
@@ -14,12 +14,12 @@ import net.md_5.bungee.api.plugin.Command;
 public class GunBan extends Command {
 
     private final Database dataBase;
-    private final Config notificationsConfig;
+    private final Messages messages;
 
-    public GunBan(Database dataBase, Config notificationsConfig) {
+    public GunBan(Database dataBase, Messages messages) {
         super("gunban", CommandPermissions.gunban);
         this.dataBase = dataBase;
-        this.notificationsConfig = notificationsConfig;
+        this.messages = messages;
     }
 
     @Override
@@ -28,7 +28,10 @@ public class GunBan extends Command {
         String reason = "";
 
         TextComponent correctUsage =
-                Utils.createHoverEvent_TwoDesc(notificationsConfig, "commands.gunban.hover_event", "commands.gunban.correct_usage");
+                Utils.createHoverEvent(
+                        messages.getString("NORMAL.COMMAND.GUNBAN.CORRECT_USAGE"),
+                        messages.getString("NORMAL.COMMAND.GUNBAN.HOVER_EVENT")
+                );
         if(args.length < 1) {
             sender.sendMessage(correctUsage);
             return;
@@ -38,7 +41,7 @@ public class GunBan extends Command {
                 reason = Utils.mergeArray(args, 1);
         }
 
-        if(!Utils.isUnderLimit(sender, notificationsConfig, playerName, reason))
+        if(!Utils.isUnderLimit(sender, messages, playerName, reason))
             return;
 
         String finalReason = reason;
@@ -49,10 +52,10 @@ public class GunBan extends Command {
         BanData banData;
         switch (dataBase.checkBan("blacklist", playerName)) {
             case -1:
-                sender.sendMessage(TextComponent.fromLegacyText(notificationsConfig.get().getString("database.error")));
+                sender.sendMessage(TextComponent.fromLegacyText(messages.getString("NORMAL.ERROR")));
                 break;
             case 0:
-                sender.sendMessage(TextComponent.fromLegacyText(notificationsConfig.get().getString("command.gunban.not_banned")));
+                sender.sendMessage(TextComponent.fromLegacyText(messages.getString("NORMAL.COMMAND.GUNBAN.NOT_BANNED")));
                 break;
             case 1:
                 if(sender.hasPermission(CommandPermissions.gunbanop))
@@ -61,14 +64,14 @@ public class GunBan extends Command {
                     banData = dataBase.getLastGivenOwnBan("blacklist", playerName, giverName);//low_rank
 
                 if(banData == null) {
-                    sender.sendMessage(TextComponent.fromLegacyText(notificationsConfig.get().getString("database.error")));
+                    sender.sendMessage(TextComponent.fromLegacyText(messages.getString("NORMAL.ERROR")));
                     return;
                 }
 
                 if(dataBase.removeBan(sender, "blacklist", banData, ModificationType.UNBAN, reason))
-                    sender.sendMessage(TextComponent.fromLegacyText(notificationsConfig.get().getString("command.unban.unbanned")));
+                    sender.sendMessage(TextComponent.fromLegacyText(messages.getString("NORMAL.COMMAND.GUNBAN.SUCCESS")));
                 else
-                    sender.sendMessage(TextComponent.fromLegacyText(notificationsConfig.get().getString("database.error")));
+                    sender.sendMessage(TextComponent.fromLegacyText(messages.getString("NORMAL.ERROR")));
                 break;
         }
     }

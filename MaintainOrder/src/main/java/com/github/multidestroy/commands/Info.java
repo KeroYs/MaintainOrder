@@ -1,12 +1,12 @@
 package com.github.multidestroy.commands;
 
-import com.github.multidestroy.Config;
 import com.github.multidestroy.Main;
 import com.github.multidestroy.MuteSystem;
 import com.github.multidestroy.Utils;
 import com.github.multidestroy.commands.assets.CommandPermissions;
 import com.github.multidestroy.database.Database;
 import com.github.multidestroy.info.BanData;
+import com.github.multidestroy.i18n.Messages;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
@@ -16,7 +16,6 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
-import net.md_5.bungee.api.plugin.Plugin;
 
 import java.time.Instant;
 import java.util.List;
@@ -44,20 +43,23 @@ public class Info extends Command {
 
     private final MuteSystem muteSystem;
     private final Database dataBase;
-    private final Config notificationsConfig;
+    private Messages messages;
 
-    public Info(MuteSystem muteSystem, Database dataBase, Config notificationsConfig) {
+    public Info(MuteSystem muteSystem, Database dataBase, Messages messages) {
         super("info", CommandPermissions.info);
         this.muteSystem = muteSystem;
+        this.messages = messages;
         this.dataBase = dataBase;
-        this.notificationsConfig = notificationsConfig;
     }
 
     @Override
     public void execute(CommandSender sender, String[] args) {
         InfoType infoType;
         TextComponent correctUsage =
-                Utils.createHoverEvent_OneDesc(notificationsConfig, "commands.info.hover_event", "commands.info.correct_usage");
+                Utils.createHoverEvent(
+                        messages.getString("NORMAL.COMMAND.INFO.CORRECT_USAGE"),
+                        messages.getString("NORMAL.COMMAND.INFO.HOVER_EVENT")
+                );
 
         if (args.length < 1 || args.length > 2) {
             sender.sendMessage(correctUsage);
@@ -72,7 +74,7 @@ public class Info extends Command {
             }
         }
 
-        if (Utils.isUnderLimit(sender, notificationsConfig, args[0]))
+        if (Utils.isUnderLimit(sender, messages, args[0]))
             Main.plugin.getProxy().getScheduler().runAsync(Main.plugin, () -> sender.sendMessage(startAsync(args[0], infoType)));
     }
 

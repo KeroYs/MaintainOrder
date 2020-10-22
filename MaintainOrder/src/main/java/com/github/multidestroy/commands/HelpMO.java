@@ -1,20 +1,10 @@
 package com.github.multidestroy.commands;
 
-import com.github.multidestroy.Config;
 import com.github.multidestroy.Utils;
 import com.github.multidestroy.commands.assets.CommandPermissions;
-import com.github.multidestroy.commands.bans.Ban;
-import com.github.multidestroy.commands.bans.GBan;
-import com.github.multidestroy.commands.bans.GunBan;
-import com.github.multidestroy.commands.bans.UnBan;
-import com.github.multidestroy.commands.kick.GKick;
-import com.github.multidestroy.commands.kick.Kick;
-import com.github.multidestroy.commands.mute.Mute;
-import com.github.multidestroy.commands.mute.MuteChat;
-import com.github.multidestroy.commands.mute.UnMute;
+import com.github.multidestroy.i18n.Messages;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
-import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -22,21 +12,23 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
 
 import java.time.Instant;
-import java.util.Arrays;
 
 public class HelpMO extends Command {
 
-    public Config notificationsConfig;
+    public Messages messages;
 
-    public HelpMO(Config notificationsConfig) {
+    public HelpMO(Messages messages) {
         super("help-mo", CommandPermissions.help_mo);
-        this.notificationsConfig = notificationsConfig;
+        this.messages = messages;
     }
 
     @Override
     public void execute(CommandSender sender, String[] args) {
         TextComponent correctUsage =
-                Utils.createHoverEvent_OneDesc(notificationsConfig, "commands.help-mo.hover_event", "commands.help-mo.correct_usage");
+                Utils.createHoverEvent(
+                        messages.getString("NORMAL.COMMAND.HELP-MO.CORRECT_USAGE"),
+                        messages.getString("NORMAL.COMMAND.HELP-MO.HOVER_EVENT")
+                );
         if (args.length == 0) {
             pageOne(sender, correctUsage);
         } else if (args.length == 1) {
@@ -45,7 +37,7 @@ public class HelpMO extends Command {
             } else if (args[0].equals("2")) {
                 pageTwo(sender);
             } else
-                sender.sendMessage(TextComponent.fromLegacyText(notificationsConfig.get().getString("commands.help-mo.pages_range")));;
+                sender.sendMessage(TextComponent.fromLegacyText(messages.getString("NORMAL.COMMAND.HELP-MO.PAGES_RANGE")));
         } else
             sender.sendMessage(correctUsage);
     }
@@ -55,35 +47,51 @@ public class HelpMO extends Command {
         ComponentBuilder pageOne = new ComponentBuilder();
         pageOne.append(ChatColor.GRAY + "----- MaintainOrder help -----\n")
                 .append(getPermissionInfoLine())
-                .append(getCorrectUsageLine(sender, CommandPermissions.help_mo, correctUsage))
-                .append(getCorrectUsageLine(sender, CommandPermissions.reload_mo, "commands.reload-mo.hover_event", "commands.reload-mo.correct_usage"))
-                .append(getCorrectUsageLine(sender, CommandPermissions.info, "commands.info.hover_event", "commands.info.correct_usage"))
-                .append(getCorrectUsageLine(sender, CommandPermissions.gban, "commands.gban.hover_event", "commands.gban.correct_usage"))
-                .append(getCorrectUsageLine(sender, CommandPermissions.gunban, CommandPermissions.gunbanop, "commands.gunban.hover_event", "commands.gunban.correct_usage"))
-                .append(getCorrectUsageLine(sender, CommandPermissions.gkick, "commands.gkick.hover_event", "commands.gkick.correct_usage"))
+                .append(getCorrectUsageHelpMo(sender, correctUsage))
+                .append(getCorrectUsageLine(sender, CommandPermissions.reload_mo,
+                        messages.getString("NORMAL.COMMAND.RELOAD-MO.CORRECT_USAGE"),
+                        messages.getString("NORMAL.COMMAND.RELOAD-MO.HOVER_EVENT")))
+                .append(getCorrectUsageLine(sender, CommandPermissions.info,
+                        messages.getString("NORMAL.COMMAND.INFO.CORRECT_USAGE"),
+                        messages.getString("NORMAL.COMMAND.INFO.HOVER_EVENT")))
+                .append(getCorrectUsageLine(sender, CommandPermissions.gban,
+                        messages.getString("NORMAL.COMMAND.GBAN.CORRECT_USAGE"),
+                        messages.getString("NORMAL.COMMAND.GBAN.HOVER_EVENT")))
+                .append(getCorrectUsageLine(sender, CommandPermissions.gunban, CommandPermissions.gunbanop,
+                        messages.getString("NORMAL.COMMAND.GUNBAN.CORRECT_USAGE"),
+                        messages.getString("NORMAL.COMMAND.GUNBAN.HOVER_EVENT")))
+                .append(getCorrectUsageLine(sender, CommandPermissions.gkick,
+                        messages.getString("NORMAL.COMMAND.GKICK.CORRECT_USAGE"),
+                        messages.getString("NORMAL.COMMAND.GKICK.HOVER_EVENT")))
                 .append(ChatColor.GRAY + "---------- Page 1 ----------");
 
         sender.sendMessage( pageOne.create() );
-        sender.sendMessage(TextComponent.fromLegacyText(ChatColor.GREEN + "one: " + ((float) (Instant.now().toEpochMilli() - start.toEpochMilli())) ));
     }
 
     private void pageTwo(CommandSender sender) {
         Instant start = Instant.now();
         ComponentBuilder pageTwo = new ComponentBuilder();
+        boolean isPlayer = sender instanceof ProxiedPlayer;
         pageTwo.append(ChatColor.GRAY + "----- MaintainOrder help -----\n")
                 .append(getPermissionInfoLine())
-                .append(getCorrectUsageLine(sender, CommandPermissions.ban, "commands.ban.hover_event",
-                        sender instanceof ProxiedPlayer ? "commands.ban.game_correct_usage" : "commands.ban.console_correct_usage"))
-                .append(getCorrectUsageLine(sender, CommandPermissions.unban, CommandPermissions.unbanop, "commands.unban.hover_event",
-                        sender instanceof ProxiedPlayer ? "commands.unban.game_correct_usage" : "commands.unban.console_correct_usage"))
-                .append(getCorrectUsageLine(sender, CommandPermissions.kick, "commands.kick.hover_event",
-                        sender instanceof ProxiedPlayer ? "commands.kick.game_correct_usage" : "commands.kick.console_correct_usage"))
-                .append(getCorrectUsageLine(sender, CommandPermissions.mute, "commands.mute.hover_event",
-                        sender instanceof ProxiedPlayer ? "commands.mute.game_correct_usage" : "commands.mute.console_correct_usage"))
-                .append(getCorrectUsageLine(sender, CommandPermissions.mutechat, "commands.mutechat.hover_event",
-                        sender instanceof ProxiedPlayer ? "commands.mutechat.game_correct_usage" : "commands.mutechat.console_correct_usage"))
-                .append(getCorrectUsageLine(sender, CommandPermissions.unmute, "commands.unmute.hover_event",
-                        sender instanceof ProxiedPlayer ? "commands.unmute.game_correct_usage" : "commands.unmute.console_correct_usage"))
+                .append(getCorrectUsageLine(sender, CommandPermissions.ban,
+                        isPlayer ? messages.getString("NORMAL.COMMAND.BAN.GAME_CORRECT_USAGE") : messages.getString("NORMAL.COMMAND.BAN.CONSOLE_CORRECT_USAGE"),
+                        messages.getString("NORMAL.COMMAND.BAN.HOVER_EVENT")))
+                .append(getCorrectUsageLine(sender, CommandPermissions.unban,
+                        isPlayer ? messages.getString("NORMAL.COMMAND.UNBAN.GAME_CORRECT_USAGE") : messages.getString("NORMAL.COMMAND.UNBAN.CONSOLE_CORRECT_USAGE"),
+                        messages.getString("NORMAL.COMMAND.UNBAN.HOVER_EVENT")))
+                .append(getCorrectUsageLine(sender, CommandPermissions.kick,
+                        isPlayer ? messages.getString("NORMAL.COMMAND.KICK.GAME_CORRECT_USAGE") : messages.getString("NORMAL.COMMAND.KICK.CONSOLE_CORRECT_USAGE"),
+                        messages.getString("NORMAL.COMMAND.KICK.HOVER_EVENT")))
+                .append(getCorrectUsageLine(sender, CommandPermissions.mute,
+                        isPlayer ? messages.getString("NORMAL.COMMAND.MUTE.GAME_CORRECT_USAGE") : messages.getString("NORMAL.COMMAND.MUTE.CONSOLE_CORRECT_USAGE"),
+                        messages.getString("NORMAL.COMMAND.MUTE.HOVER_EVENT")))
+                .append(getCorrectUsageLine(sender, CommandPermissions.mutechat,
+                        isPlayer ? messages.getString("NORMAL.COMMAND.MUTECHAT.GAME_CORRECT_USAGE") : messages.getString("NORMAL.COMMAND.MUTECHAT.CONSOLE_CORRECT_USAGE"),
+                        messages.getString("NORMAL.COMMAND.MUTECHAT.HOVER_EVENT")))
+                .append(getCorrectUsageLine(sender, CommandPermissions.unmute,
+                        isPlayer ? messages.getString("NORMAL.COMMAND.UNMUTE.GAME_CORRECT_USAGE") : messages.getString("NORMAL.COMMAND.UNMUTE.CONSOLE_CORRECT_USAGE"),
+                        messages.getString("NORMAL.COMMAND.UNMUTE.HOVER_EVENT")))
                 .append(ChatColor.GRAY + "---------- Page 2 ----------");
 
         sender.sendMessage( pageTwo.create() );
@@ -91,13 +99,13 @@ public class HelpMO extends Command {
     }
 
     private String getPermissionInfoLine() {
-        return ChatColor.GREEN + notificationsConfig.get().getString("commands.help-mo.permissions.have") +
+        return ChatColor.GREEN + messages.getString("NORMAL.COMMAND.HELP-MO.DISPLAY.HAVE_PERMISSION") +
                 ChatColor.DARK_GRAY + " <> " +
-                ChatColor.RED + notificationsConfig.get().getString("commands.help-mo.permissions.not_have") + "\n";
+                ChatColor.RED + messages.getString("NORMAL.COMMAND.HELP-MO.DISPLAY.LACK_OF_PERMISSION") + "\n";
     }
 
-    private TextComponent getCorrectUsageLine(CommandSender sender, String permission, String hoverEventPath, String correctUsagePath) {
-        TextComponent correctUsage = Utils.createHoverEvent_OneDesc(notificationsConfig, hoverEventPath, correctUsagePath);
+    private TextComponent getCorrectUsageLine(CommandSender sender, String permission, String correctUsageText, String hoverEventText) {
+        TextComponent correctUsage = Utils.createHoverEvent(correctUsageText, hoverEventText);
         HoverEvent hoverEvent = correctUsage.getHoverEvent();
         TextComponent newLine = new TextComponent((sender.hasPermission(permission) ? ChatColor.GREEN : ChatColor.RED) +
                 ChatColor.stripColor(correctUsage.getText()) + "\n");
@@ -107,8 +115,8 @@ public class HelpMO extends Command {
         return newLine;
     }
 
-    private TextComponent getCorrectUsageLine(CommandSender sender, String permission1, String permission2, String hoverEventPath, String correctUsagePath) {
-        TextComponent correctUsage = Utils.createHoverEvent_TwoDesc(notificationsConfig, hoverEventPath, correctUsagePath);
+    private TextComponent getCorrectUsageLine(CommandSender sender, String permission1, String permission2, String correctUsageText, String hoverEventText) {
+        TextComponent correctUsage = Utils.createHoverEvent(correctUsageText, hoverEventText);
         HoverEvent hoverEvent = correctUsage.getHoverEvent();
         TextComponent newLine = new TextComponent((sender.hasPermission(permission1) || sender.hasPermission(permission2) ? ChatColor.GREEN : ChatColor.RED) +
                 ChatColor.stripColor(correctUsage.getText()) + "\n");
@@ -118,9 +126,9 @@ public class HelpMO extends Command {
         return newLine;
     }
 
-    private TextComponent getCorrectUsageLine(CommandSender sender, String permission, TextComponent correctUsage) {
+    private TextComponent getCorrectUsageHelpMo(CommandSender sender, TextComponent correctUsage) {
         HoverEvent hoverEvent = correctUsage.getHoverEvent();
-        TextComponent newLine = new TextComponent((sender.hasPermission(permission) ? ChatColor.GREEN : ChatColor.RED) +
+        TextComponent newLine = new TextComponent((sender.hasPermission(CommandPermissions.help_mo) ? ChatColor.GREEN : ChatColor.RED) +
                 ChatColor.stripColor(correctUsage.getText()) + "\n");
 
         newLine.setHoverEvent(hoverEvent);

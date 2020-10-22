@@ -4,11 +4,11 @@ import com.github.multidestroy.*;
 import com.github.multidestroy.commands.assets.CommandCreator;
 import com.github.multidestroy.commands.assets.CommandPermissions;
 import com.github.multidestroy.commands.assets.MuteCreator;
-import net.md_5.bungee.api.ChatColor;
+import com.github.multidestroy.i18n.Messages;
+import com.github.multidestroy.i18n.SpecialType;
+import com.github.multidestroy.i18n.SpecialTypeInfo;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -21,16 +21,14 @@ public class Mute extends Command {
     private final MuteSystem muteSystem;
     private final Messages messages;
     private final Config config;
-    private final Config notificationsConfig;
     private final CommandCreator creator;
 
-    public Mute(MuteSystem muteSystem, Messages messages, Config config, Config notificationsConfig) {
+    public Mute(MuteSystem muteSystem, Messages messages, Config config) {
         super("mute", CommandPermissions.mute);
         this.muteSystem = muteSystem;
         this.messages = messages;
         this.config = config;
-        this.notificationsConfig = notificationsConfig;
-        this.creator = new MuteCreator(notificationsConfig);
+        this.creator = new MuteCreator(messages);
     }
 
     @Override
@@ -42,7 +40,12 @@ public class Mute extends Command {
         if(sender instanceof ProxiedPlayer) {
             //Player
             correctUsage =
-                    Utils.createHoverEvent_OneDesc(notificationsConfig, "commands.mute.hover_event", "commands.mute.game_correct_usage");
+                    Utils.createHoverEvent(
+                        messages.getString("NORMAL.COMMAND.MUTE.GAME_CORRECT_USAGE"),
+                        messages.getString("NORMAL.COMMAND.MUTE.HOVER_EVENT"
+                        ));
+
+
             if(args.length < 3)
                 sender.sendMessage( correctUsage );
             else {
@@ -54,13 +57,13 @@ public class Mute extends Command {
         } else {
             //Console
             correctUsage =
-                    Utils.createHoverEvent_OneDesc(notificationsConfig, "commands.mute.hover_event", "commands.mute.console_correct_usage");
+                    new TextComponent(messages.getString("NORMAL.COMMAND.MUTE.CONSOLE_CORRECT_USAGE"));
             if(args.length < 4)
                 sender.sendMessage( correctUsage );
             else {
                 server = ProxyServer.getInstance().getServerInfo(args[0]);
                 if(server == null)
-                    sender.sendMessage(TextComponent.fromLegacyText(notificationsConfig.get().getString("bad_usage.wrong_server_name")));
+                    sender.sendMessage(TextComponent.fromLegacyText(messages.getString("NORMAL.INCORRECT_USAGE.WRONG_SERVER_NAME")));
                 else {
                     reason = Utils.mergeArray(args, 3);
 
@@ -71,7 +74,7 @@ public class Mute extends Command {
     }
 
     private void start(CommandSender giver, TextComponent correctUsage, String time, String reason, String receiver, ServerInfo server) {
-        if(!Utils.isUnderLimit(giver, notificationsConfig, receiver, reason))
+        if(!Utils.isUnderLimit(giver, messages, receiver, reason))
             return;
 
         if(creator.timeCorrectness(giver, correctUsage, time)) {
@@ -87,14 +90,26 @@ public class Mute extends Command {
                 if (canMute(currExpiration, newExpiration)) {
                     //mute player
                     muteSystem.givePlayerMute(server, playerToMute.getName(), newExpiration);
-                    Utils.sendGlobalMessage(server, messages.getMuteGlobal(playerToMute.getName(), giver.getName(), reason, creator.translateArgTime(time)));
+
+                    SpecialTypeInfo specialTypeInfo = new SpecialTypeInfo();
+                    {
+                        specialTypeInfo.setReceiver(playerToMute.getName());
+                        specialTypeInfo.setGiver(giver.getName());
+                        specialTypeInfo.setReason(reason);
+                        specialTypeInfo.setTime(creator.translateArgTime(time));
+                    }
+
+                    Utils.sendGlobalMessage(server, TextComponent.fromLegacyText(messages.getSpecialMessage(
+                            SpecialType.COMMAND_MUTE_GLOBAL,
+                            specialTypeInfo
+                    )));
                     SoundChannel.sendServerSound(server, config.get().getString("sound.mute"));
                     if(!(giver instanceof ProxiedPlayer))
-                        giver.sendMessage(TextComponent.fromLegacyText(notificationsConfig.get().getString("commands.mute.muted")));
+                        giver.sendMessage(TextComponent.fromLegacyText(messages.getString("NORMAL.COMMAND.MUTE.SUCCESS")));
                 } else
-                    giver.sendMessage(TextComponent.fromLegacyText(notificationsConfig.get().getString("commands.mute.already_muted")));
+                    giver.sendMessage(TextComponent.fromLegacyText(messages.getString("NORMAL.COMMAND.MUTE.ALREADY_MUTED")));
             } else
-                giver.sendMessage(TextComponent.fromLegacyText(notificationsConfig.get().getString("bad_usage.player_offline")));
+                giver.sendMessage(TextComponent.fromLegacyText(messages.getString("NORMAL.INCORRECT_USAGE.PLAYER_OFFLINE")));
         }
     }
 

@@ -6,16 +6,15 @@ import com.github.multidestroy.commands.assets.BanCreator;
 import com.github.multidestroy.commands.assets.CommandCreator;
 import com.github.multidestroy.commands.assets.CommandPermissions;
 import com.github.multidestroy.database.Database;
-import net.md_5.bungee.api.ChatColor;
+import com.github.multidestroy.i18n.Messages;
+import com.github.multidestroy.i18n.SpecialType;
+import com.github.multidestroy.i18n.SpecialTypeInfo;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
-import net.md_5.bungee.api.plugin.Plugin;
 
 import java.time.Instant;
 
@@ -25,15 +24,13 @@ public class Ban extends Command {
     private final Messages messages;
     private final CommandCreator creator;
     private final Config config;
-    private final Config notificationsConfig;
 
-    public Ban(Database dataBase, Messages messages, Config config, Config notificationsConfig) {
+    public Ban(Database dataBase, Messages messages, Config config) {
         super("ban", CommandPermissions.ban);
         this.dataBase = dataBase;
         this.messages = messages;
         this.config = config;
-        this.notificationsConfig = notificationsConfig;
-        this.creator = new BanCreator(notificationsConfig);
+        this.creator = new BanCreator(messages);
     }
 
     @Override
@@ -47,7 +44,9 @@ public class Ban extends Command {
 
         if(sender instanceof ProxiedPlayer) {
             correctUsage =
-                    Utils.createHoverEvent_OneDesc(notificationsConfig, "commands.ban.hover_event", "commands.ban.game_correct_usage");
+                    Utils.createHoverEvent(
+                            messages.getString("NORMAL.COMMAND.BAN.GAME_CORRECT_USAGE"),
+                            messages.getString("NORMAL.COMMAND.BAN.HOVER_EVENT"));
             //Player
             if (args.length < 3) {
                 sender.sendMessage( correctUsage );
@@ -61,17 +60,15 @@ public class Ban extends Command {
                 receiverName = args[0];
             }
         } else {
-            correctUsage =
-                    Utils.createHoverEvent_OneDesc(notificationsConfig, "commands.ban.hover_event", "commands.ban.console_correct_usage");
+            correctUsage = new TextComponent(messages.getString("NORMAL.COMMAND.BAN.CONSOLE_CORRECT_USAGE"));
             //Console
             if (args.length < 4) {
                 sender.sendMessage(correctUsage);
                 return;
-            }
-            else {
+            } else {
                 server = ProxyServer.getInstance().getServerInfo(args[0]);
                 if(server == null) {
-                    sender.sendMessage(TextComponent.fromLegacyText(notificationsConfig.get().getString("bad_usage.wrong_server_name")));
+                    sender.sendMessage(TextComponent.fromLegacyText(messages.getString("NORMAL.INCORRECT_USAGE.WRONG_SERVER_NAME")));
                     return;
                 }
                 receiver = ProxyServer.getInstance().getPlayer(args[1]);
@@ -81,7 +78,7 @@ public class Ban extends Command {
             }
         }
 
-        if(!Utils.isUnderLimit(sender, notificationsConfig, receiverName, reason))
+        if(!Utils.isUnderLimit(sender, messages, receiverName, reason))
             return;
 
         if(creator.timeCorrectness(sender, correctUsage, time))
@@ -96,11 +93,24 @@ public class Ban extends Command {
         time = creator.translateArgTime(time);
 
         if (save) {
+            SpecialTypeInfo specialTypeInfo = new SpecialTypeInfo();
+            {
+                specialTypeInfo.setGiver(sender.getName());
+                specialTypeInfo.setTime(time);
+                specialTypeInfo.setReason(reason);
+                specialTypeInfo.setReceiver(receiverName);
+            }
             if (receiver != null && receiver.getServer().getInfo().getName().equals(server.getName()))
-                receiver.disconnect(messages.getBanReceiver(sender.getName(), reason, time));
-            Utils.sendGlobalMessage(server, messages.getBanGlobal(receiverName, sender.getName(), reason, time));
+                receiver.disconnect(TextComponent.fromLegacyText(messages.getSpecialMessage(
+                        SpecialType.COMMAND_BAN_RECEIVER,
+                        specialTypeInfo
+                )));
+            Utils.sendGlobalMessage(server, TextComponent.fromLegacyText(messages.getSpecialMessage(
+                    SpecialType.COMMAND_BAN_GLOBAL,
+                    specialTypeInfo
+            )));
             SoundChannel.sendServerSound(server, config.get().getString("sound.ban"));
         } else
-            sender.sendMessage(TextComponent.fromLegacyText(notificationsConfig.get().getString("database.error")));
+            sender.sendMessage(TextComponent.fromLegacyText(messages.getString("NORMAL.ERROR")));
     }
 }

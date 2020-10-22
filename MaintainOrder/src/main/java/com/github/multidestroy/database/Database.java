@@ -35,6 +35,10 @@ public class Database {
         }
     }
 
+    public void close() {
+        dataSource.close();
+    }
+
     public boolean isConnected() {
         return connected;
     }

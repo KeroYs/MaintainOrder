@@ -1,32 +1,28 @@
 package com.github.multidestroy.commands.bans;
 
-import com.github.multidestroy.Config;
 import com.github.multidestroy.Main;
 import com.github.multidestroy.Utils;
 import com.github.multidestroy.commands.assets.CommandPermissions;
 import com.github.multidestroy.database.Database;
 import com.github.multidestroy.info.ModificationType;
 import com.github.multidestroy.info.BanData;
-import net.md_5.bungee.api.ChatColor;
+import com.github.multidestroy.i18n.Messages;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
-import net.md_5.bungee.api.plugin.Plugin;
 
 public class UnBan extends Command {
 
     private final Database dataBase;
-    private final Config notificationsConfig;
+    private final Messages messages;
 
-    public UnBan(Database dataBase, Config notificationsConfig) {
+    public UnBan(Database dataBase, Messages messages) {
         super("unban", CommandPermissions.unban);
         this.dataBase = dataBase;
-        this.notificationsConfig = notificationsConfig;
+        this.messages = messages;
     }
 
     @Override
@@ -37,7 +33,10 @@ public class UnBan extends Command {
         String reason = "";
         if(sender instanceof ProxiedPlayer) {
             correctUsage =
-                    Utils.createHoverEvent_TwoDesc(notificationsConfig, "commands.unban.hover_event", "commands.unban.game_correct_usage");
+                    Utils.createHoverEvent(
+                            messages.getString("NORMAL.COMMAND.UNBAN.GAME_CORRECT_USAGE"),
+                            messages.getString("NORMAL.COMMAND.UNBAN.HOVER_EVENT")
+                    );
             if(args.length < 1) {
                 sender.sendMessage( correctUsage );
                 return;
@@ -49,14 +48,14 @@ public class UnBan extends Command {
             }
         } else {
             correctUsage =
-                    Utils.createHoverEvent_TwoDesc(notificationsConfig, "commands.unban.hover_event", "commands.unban.console_correct_usage");
+                    new TextComponent(messages.getString("NORMAL.COMMAND.UNBAN.CONSOLE_CORRECT_USAGE"));
             if(args.length < 2) {
                 sender.sendMessage( correctUsage );
                 return;
             } else {
                 server = ProxyServer.getInstance().getServerInfo(args[0]);
                 if(server == null) {
-                    sender.sendMessage(TextComponent.fromLegacyText(notificationsConfig.get().getString("bad_usage.wrong_server_name")));
+                    sender.sendMessage(TextComponent.fromLegacyText(messages.getString("NORMAL.INCORRECT_USAGE.WRONG_SERVER_NAME")));
                     return;
                 }
                 playerName = args[1];
@@ -65,7 +64,7 @@ public class UnBan extends Command {
             }
         }
 
-        if(!Utils.isUnderLimit(sender, notificationsConfig, playerName, reason))
+        if(!Utils.isUnderLimit(sender, messages, playerName, reason))
             return;
 
         String finalReason = reason;
@@ -76,10 +75,10 @@ public class UnBan extends Command {
         BanData banData;
         switch (dataBase.checkBan(server.getName(), playerName)) {
             case -1:
-                sender.sendMessage(TextComponent.fromLegacyText(notificationsConfig.get().getString("database.error")));
+                sender.sendMessage(TextComponent.fromLegacyText(messages.getString("NORMAL.ERROR")));
                 break;
             case 0:
-                sender.sendMessage(TextComponent.fromLegacyText(notificationsConfig.get().getString("command.unban.not_banned")));
+                sender.sendMessage(TextComponent.fromLegacyText(messages.getString("NORMAL.COMMAND.UNBAN.NOT_BANNED")));
                 break;
             case 1:
                 if(sender.hasPermission(CommandPermissions.unbanop))
@@ -88,14 +87,14 @@ public class UnBan extends Command {
                     banData = dataBase.getLastGivenOwnBan(server.getName(), playerName, giverName); //low_rank
 
                 if(banData == null) {
-                    sender.sendMessage(TextComponent.fromLegacyText(notificationsConfig.get().getString("database.error")));
+                    sender.sendMessage(TextComponent.fromLegacyText(messages.getString("NORMAL.ERROR")));
                     return;
                 }
 
                 if(dataBase.removeBan(sender, server.getName(), banData, ModificationType.UNBAN, reason))
-                    sender.sendMessage(TextComponent.fromLegacyText(notificationsConfig.get().getString("command.unban.unbanned")));
+                    sender.sendMessage(TextComponent.fromLegacyText(messages.getString("NORMAL.COMMAND.UNBAN.SUCCESS")));
                 else
-                    sender.sendMessage(TextComponent.fromLegacyText(notificationsConfig.get().getString("database.error")));
+                    sender.sendMessage(TextComponent.fromLegacyText(messages.getString("NORMAL.ERROR")));
                 break;
         }
     }

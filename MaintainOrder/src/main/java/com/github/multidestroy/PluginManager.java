@@ -2,6 +2,7 @@ package com.github.multidestroy;
 
 import com.github.multidestroy.commands.assets.CommandsStructure;
 import com.github.multidestroy.database.Database;
+import com.github.multidestroy.i18n.Messages;
 import com.github.multidestroy.threads.DeleteExpiredBans;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.Plugin;
@@ -14,18 +15,15 @@ public class PluginManager {
     private final List<Thread> ongoingDeletingThreads;
     private final Database database;
     private final Config config;
-    private final Config messagesConfig;
-    private final Config notificationsConfig;
+    private Messages messages;
     private final CommandsStructure commandsStructure;
     private final Plugin plugin;
 
-    public PluginManager(Database database, Config config, Config messagesConfig, Config notificationsConfig,
-                         CommandsStructure commandsStructure, Plugin plugin) {
+    public PluginManager(Database database, Config config, CommandsStructure commandsStructure, Plugin plugin, Messages messages) {
         this.ongoingDeletingThreads = new ArrayList<>();
         this.database = database;
         this.config = config;
-        this.messagesConfig = messagesConfig;
-        this.notificationsConfig = notificationsConfig;
+        this.messages = messages;
         this.commandsStructure = commandsStructure;
         this.plugin = plugin;
     }
@@ -52,12 +50,6 @@ public class PluginManager {
         config.saveDefaultConfig();
         config.reloadCustomConfig();
         config.saveCustomConfig();
-
-        messagesConfig.saveDefaultConfig();
-        messagesConfig.reloadCustomConfig();
-
-        notificationsConfig.saveDefaultConfig();
-        notificationsConfig.reloadCustomConfig();
     }
 
     public void registerDatabaseCommands() {

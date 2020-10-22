@@ -1,7 +1,11 @@
 package com.github.multidestroy.eventhandlers;
 
-import com.github.multidestroy.Messages;
 import com.github.multidestroy.MuteSystem;
+import com.github.multidestroy.Utils;
+import com.github.multidestroy.i18n.Messages;
+import com.github.multidestroy.i18n.SpecialType;
+import com.github.multidestroy.i18n.SpecialTypeInfo;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.ChatEvent;
@@ -26,15 +30,25 @@ public class MuteHandler implements Listener {
         String message = event.getMessage();
         ProxiedPlayer player = (ProxiedPlayer) event.getSender();
         ServerInfo server = player.getServer().getInfo();
+        SpecialTypeInfo specialTypeInfo = new SpecialTypeInfo();
         if (message.charAt(0) != '/') {
             if (muteSystem.getChatStatus(server)) {
                 Instant expiration = muteSystem.getPlayerMuteExpiration(server, player.getName());
                 if (expiration != null) {
-                    player.sendMessage(messages.getMuteEvent(server, player.getName(), Instant.now()));
+                    specialTypeInfo.setLeftTime(
+                            Utils.getLeftTimeAsString(Instant.now(), muteSystem.getPlayerMuteExpiration(server, player.getName()))
+                    );
+                    player.sendMessage(TextComponent.fromLegacyText(messages.getSpecialMessage(
+                            SpecialType.EVENT_MUTE,
+                            specialTypeInfo
+                    )));
                     event.setCancelled(true);
                 }
             } else {
-                player.sendMessage(messages.getChatOFFEvent());
+                player.sendMessage(TextComponent.fromLegacyText(messages.getSpecialMessage(
+                        SpecialType.EVENT_CHATOFF,
+                        specialTypeInfo
+                )));
                 event.setCancelled(true);
             }
         }

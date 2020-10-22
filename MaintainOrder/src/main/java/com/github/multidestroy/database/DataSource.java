@@ -38,4 +38,8 @@ public class DataSource {
     public Connection getConnection() throws SQLException {
         return dataSource.getConnection();
     }
+
+    public void close() {
+        dataSource.close();
+    }
 }

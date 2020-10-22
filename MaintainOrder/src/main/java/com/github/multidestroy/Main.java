@@ -17,6 +17,7 @@ import com.github.multidestroy.database.Database;
 import com.github.multidestroy.eventhandlers.MuteHandler;
 import com.github.multidestroy.eventhandlers.PlayerJoin;
 import com.github.multidestroy.info.PlayerRank;
+import com.github.multidestroy.i18n.Messages;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.config.ServerInfo;
@@ -31,8 +32,6 @@ public class Main extends Plugin {
     public static File dataFolder;
     public static Plugin plugin;
     private Config config;
-    private Config messagesConfig;
-    private Config notificationsConfig;
     private Database database;
     private MuteSystem muteSystem;
     private Messages messages;
@@ -47,12 +46,15 @@ public class Main extends Plugin {
         PlayerRank playerRank = new PlayerRank(config);
         database = new Database(config, playerRank);
         (muteSystem = new MuteSystem()).readMutesFromTheConfigurationFile();
-        messages = new Messages(messagesConfig, database, muteSystem);
+
+
+        setUpResourceBundle();
+
         CommandsStructure commandsStructure = createCommandsObjects(); //Store all object of commands classes
 
         /* Create plugin manager */
 
-        PluginManager pluginManager = new PluginManager(database, config, messagesConfig, notificationsConfig, commandsStructure, plugin);
+        PluginManager pluginManager = new PluginManager(database, config, commandsStructure, plugin, messages);
 
         /* Those commands below are always ON (they do not depend on database) */
 
@@ -68,7 +70,7 @@ public class Main extends Plugin {
 
         /* Register listeners */
 
-        getProxy().getPluginManager().registerListener(this, new PlayerJoin(database, messages, config, notificationsConfig));
+        getProxy().getPluginManager().registerListener(this, new PlayerJoin(database, messages, config));
         getProxy().getPluginManager().registerListener(this, new MuteHandler(muteSystem, messages));
 
         /* Register plugin channel to send sounds to bukkit server */
@@ -80,7 +82,6 @@ public class Main extends Plugin {
         if (database.reloadDataSource()) {
             //If plugin has connected with database
             database.saveDefaultTables();
-            messages.reloadFromConfig();
             pluginManager.startDeletingThreads();
             pluginManager.registerDatabaseCommands();
             getLogger().info(ChatColor.GREEN + "Launched in: " + ((float) (Instant.now().toEpochMilli() - start.toEpochMilli())) / 1000 + " s");
@@ -94,6 +95,7 @@ public class Main extends Plugin {
     @Override
     public void onDisable() {
         muteSystem.saveMutesToTheConfigurationFile(getDataFolder());
+        database.close();
     }
 
     public void registerConfigs() {
@@ -102,14 +104,6 @@ public class Main extends Plugin {
         config.reloadCustomConfig();
         saveServersInConfig();
         config.saveCustomConfig();
-
-        messagesConfig = new Config("messages.yml");
-        messagesConfig.saveDefaultConfig();
-        messagesConfig.reloadCustomConfig();
-
-        notificationsConfig = new Config("notifications.yml");
-        notificationsConfig.saveDefaultConfig();
-        notificationsConfig.reloadCustomConfig();
     }
 
     private void saveServersInConfig() {
@@ -127,19 +121,26 @@ public class Main extends Plugin {
 
     private CommandsStructure createCommandsObjects() {
         return new CommandsStructure (
-                new Ban(database, messages, config, notificationsConfig),
-                new GBan(database, messages, config, notificationsConfig),
-                new GunBan(database, notificationsConfig),
-                new UnBan(database, notificationsConfig),
-                new GKick(messages, config, notificationsConfig),
-                new Kick(messages, config, notificationsConfig),
-                new Mute(muteSystem, messages, config, notificationsConfig),
-                new MuteChat(muteSystem, messages, config, notificationsConfig),
-                new UnMute(muteSystem, notificationsConfig),
-                new Gungan(config),
-                new HelpMO(notificationsConfig),
-                new Info(muteSystem, database, notificationsConfig),
-                new ReloadMO(messages, database, notificationsConfig, null));
+                new Ban(database, messages, config),
+                new GBan(database, messages, config),
+                new GunBan(database, messages),
+                new UnBan(database, messages),
+                new GKick(messages, config),
+                new Kick(messages, config),
+                new Mute(muteSystem, messages, config),
+                new MuteChat(muteSystem, messages, config),
+                new UnMute(muteSystem, messages),
+                new Gungan(),
+                new HelpMO(messages),
+                new Info(muteSystem, database, messages),
+                new ReloadMO(messages, database, null));
     }
 
+    private void setUpResourceBundle() {
+        String language = config.get().getString("language");
+        if (language == null)
+            messages = new Messages();
+        else
+            messages = new Messages(new Locale(language));
+    }
 }

@@ -2,8 +2,12 @@ package com.github.multidestroy.eventhandlers;
 
 import com.github.multidestroy.Config;
 import com.github.multidestroy.Main;
+import com.github.multidestroy.Utils;
 import com.github.multidestroy.database.Database;
-import com.github.multidestroy.Messages;
+import com.github.multidestroy.info.BanData;
+import com.github.multidestroy.i18n.Messages;
+import com.github.multidestroy.i18n.SpecialType;
+import com.github.multidestroy.i18n.SpecialTypeInfo;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -14,7 +18,7 @@ import net.md_5.bungee.api.event.ServerConnectEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 
-import java.net.InetSocketAddress;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,14 +28,12 @@ public class PlayerJoin implements Listener {
     private final Messages messages;
     private final Map<String, Boolean> playerMover;
     private final Config config;
-    private final Config notificationsConfig;
 
-    public PlayerJoin(Database database, Messages messages, Config config, Config notificationsConfig) {
+    public PlayerJoin(Database database, Messages messages, Config config) {
         this.database = database;
         this.messages = messages;
         this.config = config;
         this.playerMover = new HashMap<>();
-        this.notificationsConfig = notificationsConfig;
     }
 
 
@@ -42,28 +44,20 @@ public class PlayerJoin implements Listener {
             event.registerIntent(Main.plugin);
             switch (database.checkBan("blacklist", event.getConnection().getName(), event.getConnection().getSocketAddress().toString())) {
                 case -1:
-                    kickFromServer(event, TextComponent.fromLegacyText(notificationsConfig.get().getString("database.error")));
+                    kickFromServer(event, TextComponent.fromLegacyText(messages.getString("NORMAL.ERROR")));
                     break;
-                case 0: {
-                    switch (database.checkIpBlockade(event.getConnection().getName(), ((InetSocketAddress) event.getConnection().getSocketAddress()).getAddress())) {
-                        case -1:
-                            kickFromServer(event, TextComponent.fromLegacyText(notificationsConfig.get().getString("database.error")));
-                            break;
-                        case 1:
-                            kickFromServer(event, messages.getIpBlockadeEvent());
-                            break;
-                    }
-                    break;
-                }
                 case 1:
-                    kickFromServer(event, messages.getGBanEvent("blacklist", event.getConnection().getName()));
+                    kickFromServer(event, TextComponent.fromLegacyText(messages.getSpecialMessage(
+                            SpecialType.EVENT_GBAN,
+                            new SpecialTypeInfo()
+                    )));
                     break;
             }
             event.completeIntent(Main.plugin);
         } else {
             event.setCancelled(true);
             ProxyServer.getInstance().getPlayer(event.getConnection().getName()).sendMessage(
-                    TextComponent.fromLegacyText(notificationsConfig.get().getString("database.error"))
+                    TextComponent.fromLegacyText(messages.getString("NORMAL.ERROR"))
             );
         }
     }
@@ -84,11 +78,23 @@ public class PlayerJoin implements Listener {
                     Main.plugin.getProxy().getScheduler().runAsync(Main.plugin, () -> {
                         switch (database.checkBan(event.getTarget().getName(), player.getName(), player.getSocketAddress().toString())) {
                             case -1:
-                                player.sendMessage(TextComponent.fromLegacyText(notificationsConfig.get().getString("database.error")));
+                                player.sendMessage(TextComponent.fromLegacyText(messages.getString("NORMAL.ERROR")));
                                 return;
-                            case 1:
-                                player.sendMessage(messages.getBanEvent(event.getTarget().getName(), player.getName()));
+                            case 1: {
+                                SpecialTypeInfo specialTypeInfo = new SpecialTypeInfo();
+                                BanData banData = database.getLastExpiringBan(event.getTarget().getName(), player.getName());
+
+                                specialTypeInfo.setGiver(banData == null ? "ERROR" : banData.getGiverID());
+                                specialTypeInfo.setReason(banData == null ? "ERROR" : banData.reason);
+                                specialTypeInfo.setLeftTime((banData == null)? "ERROR" : (banData.isPerm())? "perm" : Utils.getLeftTimeAsString(Instant.now(), banData.getExpiration()));
+                                specialTypeInfo.setExpirationDate((banData == null)? "ERROR" : (banData.isPerm())? "perm" : Utils.getLeftTimeAsString(Instant.now(), banData.getExpiration()));
+
+                                player.sendMessage(TextComponent.fromLegacyText(messages.getSpecialMessage(
+                                        SpecialType.EVENT_GBAN,
+                                        specialTypeInfo
+                                )));
                                 return;
+                            }
                         }
                         playerMover.put(player.getName(), true);
                         player.connect(target);
@@ -98,8 +104,8 @@ public class PlayerJoin implements Listener {
         } else {
             event.setCancelled(true);
             event.getPlayer().sendMessage(
-                    TextComponent.fromLegacyText(notificationsConfig.get().getString("database.error"))
-            );
+                   TextComponent.fromLegacyText(messages.getString("NORMAL.ERROR")
+            ));
         }
     }
 }

@@ -1,14 +1,11 @@
 package com.github.multidestroy.commands.mute;
 
-import com.github.multidestroy.Config;
 import com.github.multidestroy.Utils;
 import com.github.multidestroy.commands.assets.CommandPermissions;
 import com.github.multidestroy.MuteSystem;
-import net.md_5.bungee.api.ChatColor;
+import com.github.multidestroy.i18n.Messages;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -19,12 +16,12 @@ import java.time.Instant;
 public class UnMute extends Command {
 
     private final MuteSystem muteSystem;
-    private Config notificationsConfig;
+    private Messages messages;
 
-    public UnMute(MuteSystem muteSystem, Config notificationsConfig) {
+    public UnMute(MuteSystem muteSystem, Messages messages) {
         super("unmute", CommandPermissions.unmute);
         this.muteSystem = muteSystem;
-        this.notificationsConfig = notificationsConfig;
+        this.messages = messages;
     }
 
     @Override
@@ -33,15 +30,17 @@ public class UnMute extends Command {
         if (sender instanceof ProxiedPlayer) {
             //Player
             correctUsage =
-                    Utils.createHoverEvent_OneDesc(notificationsConfig, "commands.unmute.hover_event", "commands.unmute.game_correct_usage");
+                    Utils.createHoverEvent(
+                            messages.getString("NORMAL.COMMAND.UNMUTE.GAME_CORRECT_USAGE"),
+                            messages.getString("NORMAL.COMMAND.UNMUTE.HOVER_EVENT")
+                    );
             ProxiedPlayer player = (ProxiedPlayer) sender;
             ServerInfo server = player.getServer().getInfo();
             if (correctnessByGame(args, sender, correctUsage))
                 unMutePlayer(server, sender, args[0]);
         } else {
             //Console
-            correctUsage =
-                    Utils.createHoverEvent_OneDesc(notificationsConfig, "commands.unmute.hover_event", "commands.unmute.console_correct_usage");
+            correctUsage = new TextComponent(messages.getString("NORMAL.COMMAND.UNMUTE.CONSOLE_CORRECT_USAGE"));
             if (args.length != 0) {
                 ServerInfo server = ProxyServer.getInstance().getServerInfo(args[0]);
                 if (correctnessByConsole(server, sender, args, correctUsage))
@@ -52,7 +51,7 @@ public class UnMute extends Command {
     }
 
     private void unMutePlayer(ServerInfo server, CommandSender sender, String playerName) {
-        if(!Utils.isUnderLimit(sender, notificationsConfig, playerName))
+        if(!Utils.isUnderLimit(sender, messages, playerName))
             return;
         ProxiedPlayer player = ProxyServer.getInstance().getPlayer(playerName);
         Instant expiration;
@@ -62,10 +61,10 @@ public class UnMute extends Command {
             expiration = muteSystem.getPlayerMuteExpiration(server, playerName);
 
         if (expiration == null)
-            sender.sendMessage(TextComponent.fromLegacyText(notificationsConfig.get().getString("commands.unmute.not_muted")));
+            sender.sendMessage(TextComponent.fromLegacyText(messages.getString("NORMAL.COMMAND.UNMUTE.NOT_MUTED")));
         else {
             muteSystem.removePlayerMute(server, playerName);
-            sender.sendMessage(TextComponent.fromLegacyText(notificationsConfig.get().getString("commands.unmute.unmuted")));
+            sender.sendMessage(TextComponent.fromLegacyText(messages.getString("NORMAL.COMMAND.UNMUTE.SUCCESS")));
         }
     }
 
@@ -80,7 +79,7 @@ public class UnMute extends Command {
     private boolean correctnessByConsole(ServerInfo server, CommandSender sender, String[] args, TextComponent correctUsage) {
         if (args.length == 2) {
             if (server == null) {
-                sender.sendMessage(TextComponent.fromLegacyText(notificationsConfig.get().getString("bad_usage.wrong_server_name")));
+                sender.sendMessage(TextComponent.fromLegacyText(messages.getString("NORMAL.INCORRECT_USAGE.WRONG_SERVER_NAME")));
                 return false;
             }
             return true;

@@ -10,11 +10,8 @@ import net.md_5.bungee.api.plugin.Command;
 import java.util.Random;
 
 public class Gungan extends Command {
-    private final Config config;
-
-    public Gungan(Config config) {
+    public Gungan() {
         super("gungan", CommandPermissions.gunban);
-        this.config = config;
     }
 
     @Override

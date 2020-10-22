@@ -1,21 +1,17 @@
 package com.github.multidestroy;
 
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.ChatMessageType;
+import com.github.multidestroy.i18n.Messages;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
-import net.md_5.bungee.config.Configuration;
-import net.md_5.bungee.protocol.packet.Chat;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class Utils {
@@ -93,61 +89,38 @@ public class Utils {
         return reason.toString();
     }
 
-    public static String mergeListWithNewLines(List<String> list) {
-        StringBuilder newString = new StringBuilder();
-        int i = 0;
-        for(String line : list) {
-            newString.append(line);
-
-            if(list.size() - 1 != i++)
-                newString.append('\n');
-        }
-        return ChatColor.translateAlternateColorCodes('&', newString.toString());
-    }
-
     public static void sendGlobalMessage(ServerInfo server, BaseComponent[] message) {
         server.getPlayers().forEach(player -> player.sendMessage(message));
     }
 
-    public static boolean isUnderLimit(CommandSender sender, Config notificationsConfig, String nick, String reason) {
+    public static boolean isUnderLimit(CommandSender sender, Messages messages, String nick, String reason) {
         if(nick.length() > 17) {
-            sender.sendMessage(TextComponent.fromLegacyText(notificationsConfig.get().getString("restrictions.char_length.nick")));
+            sender.sendMessage(TextComponent.fromLegacyText(messages.getString("NORMAL.RESTRICTION.CHAR_LENGTH.NICK")));
             return false;
         }
 
         if(reason.length() > 300) {
-            sender.sendMessage(TextComponent.fromLegacyText(notificationsConfig.get().getString("restrictions.char_length.reason")));
+            sender.sendMessage(TextComponent.fromLegacyText(messages.getString("NORMAL.RESTRICTION.CHAR_LENGTH.REASON")));
             return false;
         }
 
         return true;
     }
 
-    public static boolean isUnderLimit(CommandSender sender, Config notificationsConfig, String nick) {
+    public static boolean isUnderLimit(CommandSender sender, Messages messages, String nick) {
         if(nick.length() > 17) {
-            sender.sendMessage(TextComponent.fromLegacyText(notificationsConfig.get().getString("restrictions.char_length.nick")));
+            sender.sendMessage(TextComponent.fromLegacyText(messages.getString("NORMAL.RESTRICTION.CHAR_LENGTH.NICK")));
             return false;
         }
         return true;
     }
 
-    public static TextComponent createHoverEvent_OneDesc(Config notificationsConfig, String hoverEventPath, String correctUsagePath) {
-        TextComponent textComponent = new TextComponent(notificationsConfig.get().getString(correctUsagePath));
-        Configuration config = notificationsConfig.get().getSection(hoverEventPath);
-        textComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(
-                config.getString("description") + "\n" + config.getString("example")
-        ).create()));
-
-        return textComponent;
-    }
-
-    public static TextComponent createHoverEvent_TwoDesc(Config notificationsConfig, String hoverEventPath, String correctUsagePath) {
-        TextComponent textComponent = new TextComponent(notificationsConfig.get().getString(correctUsagePath));
-        Configuration config = notificationsConfig.get().getSection(hoverEventPath);
-        textComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(
-                config.getSection("description").getString("low_rank") + "\n" + config.getSection("description").getString("big_rank")
-                        + "\n" + config.getString("example")
-        ).create()));
+    public static TextComponent createHoverEvent(String text, String hoverText) {
+        TextComponent textComponent = new TextComponent(text);
+        textComponent.setHoverEvent(new HoverEvent(
+                HoverEvent.Action.SHOW_TEXT,
+                new ComponentBuilder(hoverText).create()
+        ));
 
         return textComponent;
     }

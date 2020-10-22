@@ -1,14 +1,13 @@
 package com.github.multidestroy.commands.assets;
 
-import com.github.multidestroy.Config;
-import net.md_5.bungee.api.ChatColor;
+import com.github.multidestroy.i18n.Messages;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.TextComponent;
 
 public class BanCreator extends CommandCreator {
 
-    public BanCreator(Config notificationsConfig) {
-        super(notificationsConfig);
+    public BanCreator(Messages messages) {
+        super(messages);
     }
 
     @Override
@@ -22,10 +21,10 @@ public class BanCreator extends CommandCreator {
     public void sendCorrectTimeValues(CommandSender sender, char type) {
         switch (type) {
             case 'h':
-                sender.sendMessage(TextComponent.fromLegacyText(notificationsConfig.get().getString("restrictions.time_range.hours")));
+                sender.sendMessage(TextComponent.fromLegacyText(messages.getString("NORMAL.RESTRICTION.TIME_RANGE.HOURS")));
                 break;
             case 'd':
-                sender.sendMessage(TextComponent.fromLegacyText(notificationsConfig.get().getString("restrictions.time_range.days")));
+                sender.sendMessage(TextComponent.fromLegacyText(messages.getString("NORMAL.RESTRICTION.TIME_RANGE.DAYS")));
                 break;
         }
     }

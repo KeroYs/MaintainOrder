@@ -19,6 +19,8 @@ database:
     100: 'HEADADMIN'
     110: 'OWNER'
 
+language: en
+
 sound:
   resource: 'https://papermc.io/javadocs/paper/1.12/org/bukkit/Sound.html'
   gban:
