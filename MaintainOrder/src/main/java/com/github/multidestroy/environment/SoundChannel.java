@@ -1,4 +1,4 @@
-package com.github.multidestroy;
+package com.github.multidestroy.environment;
 
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
@@ -28,7 +28,7 @@ public class SoundChannel {
         server.sendData(channel, out.toByteArray());
     }
 
-    public static void sendNetworkSound(String soundName) {
+    public static void sendGlobalSound(String soundName) {
         ProxyServer.getInstance().getServers().values().forEach(currServer -> {
             sendServerSound(currServer, soundName);
         });

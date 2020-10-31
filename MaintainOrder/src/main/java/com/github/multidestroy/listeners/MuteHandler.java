@@ -1,6 +1,6 @@
-package com.github.multidestroy.eventhandlers;
+package com.github.multidestroy.listeners;
 
-import com.github.multidestroy.MuteSystem;
+import com.github.multidestroy.environment.MuteSystem;
 import com.github.multidestroy.Utils;
 import com.github.multidestroy.i18n.Messages;
 import com.github.multidestroy.i18n.SpecialType;
@@ -24,7 +24,7 @@ public class MuteHandler implements Listener {
         this.muteSystem = muteSystem;
         this.messages = messages;
     }
-
+/*
     @EventHandler
     public void onChat(ChatEvent event) {
         String message = event.getMessage();
@@ -52,5 +52,5 @@ public class MuteHandler implements Listener {
                 event.setCancelled(true);
             }
         }
-    }
+    }*/
 }

@@ -1,5 +1,6 @@
-package com.github.multidestroy;
+package com.github.multidestroy.environment;
 
+import com.github.multidestroy.MainPluginClass;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.config.Configuration;
@@ -15,26 +16,25 @@ import java.util.Set;
 
 public class MuteSystem {
 
-    private Map<String, Map<String, Instant>> muteBase;
-    private Map<String, Boolean> chatStatus;
+    private final Map<String, Map<String, Instant>> muteBase; //Expiration time for each player
+    private final Map<String, Boolean> chatStatus; //Chat statuses for each server
 
-    MuteSystem() {
-        createMuteBase();
-    }
-
-    private void createMuteBase() {
+    public MuteSystem() {
         muteBase = new HashMap<>();
         chatStatus = new HashMap<>();
+        setServers();
+    }
+
+    private void setServers() {
         Set<String> keys = ProxyServer.getInstance().getServers().keySet();
-        keys.forEach(currKey -> {
-            muteBase.put(currKey, new HashMap<>());
-            chatStatus.put(currKey, true);
+        keys.forEach(server -> {
+            muteBase.put(server, new HashMap<>());
+            chatStatus.put(server, true);
         });
     }
 
-    public boolean setChatStatus(ServerInfo server, boolean status) {
+    public void setChatStatus(ServerInfo server, boolean status) {
         chatStatus.put(server.getName(), status);
-        return status;
     }
 
     public boolean getChatStatus(ServerInfo server) {
@@ -49,28 +49,32 @@ public class MuteSystem {
         muteBase.get(server.getName()).remove(playerName.toLowerCase());
     }
 
-    /**
-     * @return null if player is not muted
-     */
+    public boolean isPlayerMuted(ServerInfo server, String playerName) {
+        return getPlayerMuteExpiration(server, playerName) != Instant.EPOCH;
+    }
 
     public Instant getPlayerMuteExpiration(ServerInfo server, String playerName) {
-        playerName = playerName.toLowerCase();
-        Instant expiration = muteBase.get(server.getName()).get(playerName);
-        if(expiration != null && expiration.isBefore(Instant.now())) {
+        Instant expiration = muteBase.get(server.getName()).getOrDefault(playerName.toLowerCase(), Instant.EPOCH);
+
+        if (isMuteExpired(expiration)) {
             removePlayerMute(server, playerName);
-            return null;
+            return Instant.EPOCH;
         }
+
         return expiration;
     }
 
-    public void saveMutesToTheConfigurationFile(File dataFolder) {
-        File configFile = new File(dataFolder, "temporary saved mutes.yml");
-        Configuration configuration;
+    private boolean isMuteExpired(Instant expiration) {
+        return expiration.isBefore(Instant.now());
+    }
+
+    public void saveMutesToTheTemporaryFile(File dataFolder) {
+        File configFile = new File(dataFolder, "mutes.yml");
         try {
             if (!configFile.exists()) {
                 configFile.createNewFile();
             }
-            configuration = ConfigurationProvider.getProvider(YamlConfiguration.class).load(configFile);
+            Configuration configuration = ConfigurationProvider.getProvider(YamlConfiguration.class).load(configFile);
             saveConfig(configuration);
             ConfigurationProvider.getProvider(YamlConfiguration.class).save(configuration, configFile);
             configFile.setWritable(false);
@@ -80,22 +84,12 @@ public class MuteSystem {
     }
 
     public void readMutesFromTheConfigurationFile() {
-        File configFile = new File(Main.dataFolder, "temporary saved mutes.yml");
-        Map<String, ServerInfo> servers = ProxyServer.getInstance().getServers();
+        File configFile = new File(MainPluginClass.dataFolder, "mutes.yml");
         try {
             if (configFile.exists()) {
 
                 Configuration configuration = ConfigurationProvider.getProvider(YamlConfiguration.class).load(configFile);
-                //servers
-                configuration.getKeys().forEach(section -> {
-                    ServerInfo server = servers.get(section);
-                    if(server != null) {
-                        //players
-                        configuration.getSection(section).getKeys().forEach(player -> {
-                            givePlayerMute(server, player, Instant.ofEpochMilli(configuration.getSection(section).getSection(player).getLong("expiration")));
-                        });
-                    }
-                });
+                assignMutes(configuration);
                 configFile.delete();
             }
         } catch (IOException e) {
@@ -108,6 +102,20 @@ public class MuteSystem {
             mutes.forEach((playerName, expiration) -> {
                 configuration.getSection(serverName).getSection(playerName).set("expiration", expiration.toEpochMilli());
             });
+        });
+    }
+
+    private void assignMutes(Configuration configuration) {
+        Map<String, ServerInfo> servers = ProxyServer.getInstance().getServers();
+        //servers
+        configuration.getKeys().forEach(section -> {
+            ServerInfo server = servers.get(section);
+            if(server != null) {
+                //players
+                configuration.getSection(section).getKeys().forEach(player -> {
+                    givePlayerMute(server, player, Instant.ofEpochMilli(configuration.getSection(section).getSection(player).getLong("expiration")));
+                });
+            }
         });
     }
 

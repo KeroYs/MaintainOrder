@@ -1,16 +1,11 @@
-package com.github.multidestroy.database;
+package com.github.multidestroy.environment.database;
 
 import com.github.multidestroy.Config;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.plugin.Plugin;
 
 import java.sql.Connection;
-import java.sql.JDBCType;
 import java.sql.SQLException;
-import java.util.Map;
-import java.util.logging.Logger;
 
 public class DataSource {
 

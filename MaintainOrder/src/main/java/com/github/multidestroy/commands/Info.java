@@ -1,27 +1,19 @@
 package com.github.multidestroy.commands;
 
-import com.github.multidestroy.Main;
-import com.github.multidestroy.MuteSystem;
-import com.github.multidestroy.Utils;
-import com.github.multidestroy.commands.assets.CommandPermissions;
-import com.github.multidestroy.database.Database;
-import com.github.multidestroy.info.BanData;
-import com.github.multidestroy.i18n.Messages;
-import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
-import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
 
-import java.time.Instant;
-import java.util.List;
-
+@Deprecated
 public class Info extends Command {
+    public Info(String name) {
+        super(name);
+    }
 
+    @Override
+    public void execute(CommandSender sender, String[] args) {
+
+    }
+/*
     enum InfoType {
         NON_SPECIFIED,
         NORMAL,
@@ -127,7 +119,7 @@ public class Info extends Command {
         });
 
         ProxyServer.getInstance().getServers().values().forEach(server -> {
-            List<BanData> ongoingBans = dataBase.getOngoingBans(server.getName(), playerName);
+            /List<BanData> ongoingBans = dataBase.getOngoingBans(server.getName(), playerName);
 
             ongoingBans.forEach(ban -> {
                 cb1.append(ongoingBanInfo(server.getName(), ban)).append("\n", ComponentBuilder.FormatRetention.NONE);
@@ -164,5 +156,5 @@ public class Info extends Command {
         cb.append(empty);
         return cb.create();
     }
-
+*/
 }

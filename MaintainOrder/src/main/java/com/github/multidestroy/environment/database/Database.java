@@ -1,11 +1,13 @@
-package com.github.multidestroy.database;
+package com.github.multidestroy.environment.database;
 
 import com.github.multidestroy.Config;
+import com.github.multidestroy.environment.TimeArgument;
 import com.github.multidestroy.info.*;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 
 import java.net.InetAddress;
@@ -532,5 +534,39 @@ public class Database {
                 ex.printStackTrace();
             }
         }
+    }
+
+    public void banPlayer(String giver, String recipient, String serverName, TimeArgument time, String reason) throws SQLException {
+        String query = "INSERT INTO bans VALUES (1, 5, 4, 5, 'adsfa', 1, NULL)";
+        try (Connection conn = dataSource.getConnection()) {
+            PreparedStatement ps = setPreparedStatementParameters(
+                    conn.prepareStatement(query),
+                    giver,
+                    recipient,
+                    serverName,
+                    time,
+                    reason);
+
+            ps.execute();
+        }
+    }
+
+    public void unbanPlayer(String giver, String recipient, String serverName, String reason) throws SQLException {
+
+    }
+
+    private PreparedStatement setPreparedStatementParameters(PreparedStatement ps, Object... parameters) throws SQLException {
+        if (parameters.length != 0) {
+            int i = 1; //index
+            for (Object parameter : parameters) {
+                ps.setObject(i++, parameter);
+            }
+        }
+        return ps;
+    }
+
+    private static TextComponent readSQLException(SQLException e) {
+        e.getErrorCode();
+        return null;
     }
 }

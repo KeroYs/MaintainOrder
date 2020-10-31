@@ -85,17 +85,17 @@ public enum SpecialType {
 
     private String replaceSpecialType(String text, SpecialTypeInfo specialTypeInfo) {
         if (receiver)
-            text = text.replaceAll("(?i)" + Pattern.quote("<Receiver>"), specialTypeInfo.getReceiver());
+            text = text.replaceAll("(?i)" + Pattern.quote("<Receiver>"), specialTypeInfo.getValue(SpecialTypeInfo.ArgType.RECEIVER));
         if (giver)
-            text = text.replaceAll("(?i)" + Pattern.quote("<Giver>"), specialTypeInfo.getGiver());
+            text = text.replaceAll("(?i)" + Pattern.quote("<Giver>"), specialTypeInfo.getValue(SpecialTypeInfo.ArgType.GIVER));
         if (time)
-            text = text.replaceAll("(?i)" + Pattern.quote("<Time>"), specialTypeInfo.getTime());
+            text = text.replaceAll("(?i)" + Pattern.quote("<Time>"), specialTypeInfo.getValue(SpecialTypeInfo.ArgType.TIME));
         if (reason)
-            text = text.replaceAll("(?i)" + Pattern.quote("<Reason>"), specialTypeInfo.getReason());
+            text = text.replaceAll("(?i)" + Pattern.quote("<Reason>"), specialTypeInfo.getValue(SpecialTypeInfo.ArgType.REASON));
         if (leftTime)
-            text = text.replaceAll("(?i)" + Pattern.quote("<Left_time>"), specialTypeInfo.getLeftTime());
+            text = text.replaceAll("(?i)" + Pattern.quote("<Left_time>"), specialTypeInfo.getValue(SpecialTypeInfo.ArgType.LEFT_TIME));
         if (expirationDate)
-            text = text.replaceAll("(?i)" + Pattern.quote("<Expiration_date>"), specialTypeInfo.getExpirationDate());
+            text = text.replaceAll("(?i)" + Pattern.quote("<Expiration_date>"), specialTypeInfo.getValue(SpecialTypeInfo.ArgType.EXPIRATION_DATE));
 
         return text;
     }

@@ -1,5 +1,5 @@
 name: MaintainOrder
-main: com.github.multidestroy.Main
+main: com.github.multidestroy.MainPluginClass
 version: 1.2 Beta
 commands:
   ban:
@@ -17,7 +17,7 @@ commands:
   unmute:
     description: Unmute player on the server
   gungan:
-    description: easteregg
+    description: Easteregg
   help-mo:
     description: Display commands delievered by this plugin
   info:

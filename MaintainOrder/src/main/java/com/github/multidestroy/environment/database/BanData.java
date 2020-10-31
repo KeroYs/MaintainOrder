@@ -1,6 +1,6 @@
-package com.github.multidestroy.info;
+package com.github.multidestroy.environment.database;
 
-import com.github.multidestroy.database.Database;
+import com.github.multidestroy.environment.database.Database;
 
 import java.time.Instant;
 

@@ -1,7 +1,5 @@
 package com.github.multidestroy;
 
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
 import net.md_5.bungee.config.YamlConfiguration;
@@ -22,14 +20,14 @@ public class Config {
     }
 
     public void saveDefaultConfig() {
-        if(!Main.dataFolder.exists())
-            Main.dataFolder.mkdir();
+        if(!MainPluginClass.dataFolder.exists())
+            MainPluginClass.dataFolder.mkdir();
 
         if (configFile == null)
-            configFile = new File(Main.dataFolder, name);
+            configFile = new File(MainPluginClass.dataFolder, name);
 
         if (!configFile.exists()) {
-            try (InputStream in = Main.plugin.getResourceAsStream( name )) {
+            try (InputStream in = MainPluginClass.plugin.getResourceAsStream( name )) {
                 Files.copy(in, configFile.toPath());
             } catch (IOException e) {
                 e.printStackTrace();
@@ -38,11 +36,11 @@ public class Config {
     }
 
     public void saveCustomConfig() {
-        if(!Main.dataFolder.exists())
-            Main.dataFolder.mkdir();
+        if(!MainPluginClass.dataFolder.exists())
+            MainPluginClass.dataFolder.mkdir();
 
         if (configFile == null)
-            configFile = new File(Main.dataFolder, name);
+            configFile = new File(MainPluginClass.dataFolder, name);
 
         try {
             ConfigurationProvider.getProvider(YamlConfiguration.class).save(config, configFile);
@@ -52,11 +50,11 @@ public class Config {
     }
 
     public void reloadCustomConfig() {
-        if(!Main.dataFolder.exists())
-            Main.dataFolder.mkdir();
+        if(!MainPluginClass.dataFolder.exists())
+            MainPluginClass.dataFolder.mkdir();
 
         if (configFile == null)
-            configFile = new File(Main.dataFolder, name);
+            configFile = new File(MainPluginClass.dataFolder, name);
 
         try {
             config = ConfigurationProvider.getProvider(YamlConfiguration.class).load(configFile);

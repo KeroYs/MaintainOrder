@@ -76,17 +76,15 @@ public class Utils {
         } else return "0s";
     }
 
-    public static String mergeArray(String[] args, int startIndex) {
-        int i = 0;
-        StringBuilder reason = new StringBuilder();
-        for (String next : args) {
-            if (i < startIndex)
-                i++;
-            else {
-                reason.append(next).append(" ");
-            }
+    public static String arrayToString (String[] reason, int beg) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = beg; i < reason.length; i++) {
+            sb.append(reason[i]);
+            if (i + 1 < reason.length)
+                sb.append(' ');
         }
-        return reason.toString();
+
+        return sb.toString();
     }
 
     public static void sendGlobalMessage(ServerInfo server, BaseComponent[] message) {

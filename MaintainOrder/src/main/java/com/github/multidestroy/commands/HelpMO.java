@@ -2,100 +2,85 @@ package com.github.multidestroy.commands;
 
 import com.github.multidestroy.Utils;
 import com.github.multidestroy.commands.assets.CommandPermissions;
+import com.github.multidestroy.commands.assets.MaintainOrderCommand;
+import com.github.multidestroy.environment.CommandsManager;
+import com.github.multidestroy.exceptions.WrongArgumentException;
 import com.github.multidestroy.i18n.Messages;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.api.plugin.Command;
 
 import java.time.Instant;
 
-public class HelpMO extends Command {
+public class HelpMO extends MaintainOrderCommand {
 
-    public Messages messages;
+    private CommandsManager commandsManager;
 
-    public HelpMO(Messages messages) {
-        super("help-mo", CommandPermissions.help_mo);
-        this.messages = messages;
+    public HelpMO(Messages messages, CommandsManager commandsManager) {
+        super(messages, "help-mo", CommandPermissions.help_mo, 0, 1);
+        this.commandsManager = commandsManager;
     }
 
     @Override
-    public void execute(CommandSender sender, String[] args) {
-        TextComponent correctUsage =
-                Utils.createHoverEvent(
-                        messages.getString("NORMAL.COMMAND.HELP-MO.CORRECT_USAGE"),
-                        messages.getString("NORMAL.COMMAND.HELP-MO.HOVER_EVENT")
-                );
-        if (args.length == 0) {
-            pageOne(sender, correctUsage);
-        } else if (args.length == 1) {
-            if (args[0].equals("1")) {
-                pageOne(sender, correctUsage);
-            } else if (args[0].equals("2")) {
-                pageTwo(sender);
-            } else
-                sender.sendMessage(TextComponent.fromLegacyText(messages.getString("NORMAL.COMMAND.HELP-MO.PAGES_RANGE")));
-        } else
-            sender.sendMessage(correctUsage);
+    public void start(ProxiedPlayer executor, String[] args) throws WrongArgumentException {
+        BaseComponent[] page = getPage(executor, args);
+
+        executor.sendMessage(page);
     }
 
-    private void pageOne(CommandSender sender, TextComponent correctUsage) {
-        Instant start = Instant.now();
-        ComponentBuilder pageOne = new ComponentBuilder();
-        pageOne.append(ChatColor.GRAY + "----- MaintainOrder help -----\n")
-                .append(getPermissionInfoLine())
-                .append(getCorrectUsageHelpMo(sender, correctUsage))
-                .append(getCorrectUsageLine(sender, CommandPermissions.reload_mo,
-                        messages.getString("NORMAL.COMMAND.RELOAD-MO.CORRECT_USAGE"),
-                        messages.getString("NORMAL.COMMAND.RELOAD-MO.HOVER_EVENT")))
-                .append(getCorrectUsageLine(sender, CommandPermissions.info,
-                        messages.getString("NORMAL.COMMAND.INFO.CORRECT_USAGE"),
-                        messages.getString("NORMAL.COMMAND.INFO.HOVER_EVENT")))
-                .append(getCorrectUsageLine(sender, CommandPermissions.gban,
-                        messages.getString("NORMAL.COMMAND.GBAN.CORRECT_USAGE"),
-                        messages.getString("NORMAL.COMMAND.GBAN.HOVER_EVENT")))
-                .append(getCorrectUsageLine(sender, CommandPermissions.gunban, CommandPermissions.gunbanop,
-                        messages.getString("NORMAL.COMMAND.GUNBAN.CORRECT_USAGE"),
-                        messages.getString("NORMAL.COMMAND.GUNBAN.HOVER_EVENT")))
-                .append(getCorrectUsageLine(sender, CommandPermissions.gkick,
-                        messages.getString("NORMAL.COMMAND.GKICK.CORRECT_USAGE"),
-                        messages.getString("NORMAL.COMMAND.GKICK.HOVER_EVENT")))
-                .append(ChatColor.GRAY + "---------- Page 1 ----------");
+    private BaseComponent[] getPage(ProxiedPlayer executor, String[] args) throws WrongArgumentException {
+        if (args.length == 1) {
+            if (args[0].equalsIgnoreCase("1"))
+                return pageOne(executor);
+            if (args[0].equalsIgnoreCase("2"))
+                return pageTwo(executor);
 
-        sender.sendMessage( pageOne.create() );
+            throw new WrongArgumentException(ChatColor.RED + "Pages: [1, 2]");
+        }
+        return pageOne(executor);
     }
 
-    private void pageTwo(CommandSender sender) {
-        Instant start = Instant.now();
-        ComponentBuilder pageTwo = new ComponentBuilder();
-        boolean isPlayer = sender instanceof ProxiedPlayer;
-        pageTwo.append(ChatColor.GRAY + "----- MaintainOrder help -----\n")
-                .append(getPermissionInfoLine())
-                .append(getCorrectUsageLine(sender, CommandPermissions.ban,
-                        isPlayer ? messages.getString("NORMAL.COMMAND.BAN.GAME_CORRECT_USAGE") : messages.getString("NORMAL.COMMAND.BAN.CONSOLE_CORRECT_USAGE"),
-                        messages.getString("NORMAL.COMMAND.BAN.HOVER_EVENT")))
-                .append(getCorrectUsageLine(sender, CommandPermissions.unban,
-                        isPlayer ? messages.getString("NORMAL.COMMAND.UNBAN.GAME_CORRECT_USAGE") : messages.getString("NORMAL.COMMAND.UNBAN.CONSOLE_CORRECT_USAGE"),
-                        messages.getString("NORMAL.COMMAND.UNBAN.HOVER_EVENT")))
-                .append(getCorrectUsageLine(sender, CommandPermissions.kick,
-                        isPlayer ? messages.getString("NORMAL.COMMAND.KICK.GAME_CORRECT_USAGE") : messages.getString("NORMAL.COMMAND.KICK.CONSOLE_CORRECT_USAGE"),
-                        messages.getString("NORMAL.COMMAND.KICK.HOVER_EVENT")))
-                .append(getCorrectUsageLine(sender, CommandPermissions.mute,
-                        isPlayer ? messages.getString("NORMAL.COMMAND.MUTE.GAME_CORRECT_USAGE") : messages.getString("NORMAL.COMMAND.MUTE.CONSOLE_CORRECT_USAGE"),
-                        messages.getString("NORMAL.COMMAND.MUTE.HOVER_EVENT")))
-                .append(getCorrectUsageLine(sender, CommandPermissions.mutechat,
-                        isPlayer ? messages.getString("NORMAL.COMMAND.MUTECHAT.GAME_CORRECT_USAGE") : messages.getString("NORMAL.COMMAND.MUTECHAT.CONSOLE_CORRECT_USAGE"),
-                        messages.getString("NORMAL.COMMAND.MUTECHAT.HOVER_EVENT")))
-                .append(getCorrectUsageLine(sender, CommandPermissions.unmute,
-                        isPlayer ? messages.getString("NORMAL.COMMAND.UNMUTE.GAME_CORRECT_USAGE") : messages.getString("NORMAL.COMMAND.UNMUTE.CONSOLE_CORRECT_USAGE"),
-                        messages.getString("NORMAL.COMMAND.UNMUTE.HOVER_EVENT")))
-                .append(ChatColor.GRAY + "---------- Page 2 ----------");
 
-        sender.sendMessage( pageTwo.create() );
-        sender.sendMessage(TextComponent.fromLegacyText(ChatColor.GREEN + "two: " + ((float) (Instant.now().toEpochMilli() - start.toEpochMilli())) ));
+    @Override
+    protected TextComponent createCorrectUsage() {
+        return Utils.createHoverEvent(
+                messages.getString("NORMAL.COMMAND.HELP-MO.CORRECT_USAGE"),
+                messages.getString("NORMAL.COMMAND.HELP-MO.HOVER_EVENT")
+        );
+    }
+
+    private BaseComponent[] pageOne(ProxiedPlayer executor) {
+        ComponentBuilder page = new ComponentBuilder();
+        page.append(ChatColor.GRAY + "-----[ MaintainOrder help ]-----\n")
+                .append(getPermissionInfoLine())
+                .append(getCorrectUsageLine(executor, CommandPermissions.help_mo, getCorrectUsage()))
+//                .append(getCorrectUsageLine(executor, CommandPermissions.reload_mo, commandsManager.get("reload_mo").getCorrectUsage()))
+//                .append(getCorrectUsageLine(sender, CommandPermissions.info, commandsManager.get("info").getCorrectUsage())
+                .append(getCorrectUsageLine(executor, CommandPermissions.gban, commandsManager.get("gban").getCorrectUsage()))
+                .append(getCorrectUsageLine(executor, CommandPermissions.ban, commandsManager.get("ban").getCorrectUsage()))
+                .append(getCorrectUsageLine(executor, CommandPermissions.gunban, CommandPermissions.gunbanop, commandsManager.get("gunban").getCorrectUsage()))
+                .append(getCorrectUsageLine(executor, CommandPermissions.unban, CommandPermissions.unbanop, commandsManager.get("unban").getCorrectUsage()))
+                .append(ChatColor.GRAY + "----------[ Page 1 ]----------");
+
+        return page.create();
+    }
+
+    private BaseComponent[] pageTwo(ProxiedPlayer executor) {
+        ComponentBuilder page = new ComponentBuilder();
+        page.append(ChatColor.GRAY + "-----[ MaintainOrder help ]-----\n")
+                .append(getPermissionInfoLine())
+                .append(getCorrectUsageLine(executor, CommandPermissions.gkick, commandsManager.get("gkick").getCorrectUsage()))
+                .append(getCorrectUsageLine(executor, CommandPermissions.kick, commandsManager.get("kick").getCorrectUsage()))
+                .append(getCorrectUsageLine(executor, CommandPermissions.mute, commandsManager.get("mute").getCorrectUsage()))
+                .append(getCorrectUsageLine(executor, CommandPermissions.unmute, commandsManager.get("unmute").getCorrectUsage()))
+                .append(getCorrectUsageLine(executor, CommandPermissions.mutechat, commandsManager.get("mutechat").getCorrectUsage()))
+                .append(ChatColor.GRAY + "----------[ Page 2 ]----------");
+
+       return page.create();
     }
 
     private String getPermissionInfoLine() {
@@ -104,10 +89,9 @@ public class HelpMO extends Command {
                 ChatColor.RED + messages.getString("NORMAL.COMMAND.HELP-MO.DISPLAY.LACK_OF_PERMISSION") + "\n";
     }
 
-    private TextComponent getCorrectUsageLine(CommandSender sender, String permission, String correctUsageText, String hoverEventText) {
-        TextComponent correctUsage = Utils.createHoverEvent(correctUsageText, hoverEventText);
+    private TextComponent getCorrectUsageLine(ProxiedPlayer executor, String permission, TextComponent correctUsage) {
         HoverEvent hoverEvent = correctUsage.getHoverEvent();
-        TextComponent newLine = new TextComponent((sender.hasPermission(permission) ? ChatColor.GREEN : ChatColor.RED) +
+        TextComponent newLine = new TextComponent((executor.hasPermission(permission) ? ChatColor.GREEN : ChatColor.RED) +
                 ChatColor.stripColor(correctUsage.getText()) + "\n");
 
         newLine.setHoverEvent(hoverEvent);
@@ -115,20 +99,9 @@ public class HelpMO extends Command {
         return newLine;
     }
 
-    private TextComponent getCorrectUsageLine(CommandSender sender, String permission1, String permission2, String correctUsageText, String hoverEventText) {
-        TextComponent correctUsage = Utils.createHoverEvent(correctUsageText, hoverEventText);
+    private TextComponent getCorrectUsageLine(ProxiedPlayer executor, String permission1, String permission2, TextComponent correctUsage) {
         HoverEvent hoverEvent = correctUsage.getHoverEvent();
-        TextComponent newLine = new TextComponent((sender.hasPermission(permission1) || sender.hasPermission(permission2) ? ChatColor.GREEN : ChatColor.RED) +
-                ChatColor.stripColor(correctUsage.getText()) + "\n");
-
-        newLine.setHoverEvent(hoverEvent);
-
-        return newLine;
-    }
-
-    private TextComponent getCorrectUsageHelpMo(CommandSender sender, TextComponent correctUsage) {
-        HoverEvent hoverEvent = correctUsage.getHoverEvent();
-        TextComponent newLine = new TextComponent((sender.hasPermission(CommandPermissions.help_mo) ? ChatColor.GREEN : ChatColor.RED) +
+        TextComponent newLine = new TextComponent((executor.hasPermission(permission1) || executor.hasPermission(permission2) ? ChatColor.GREEN : ChatColor.RED) +
                 ChatColor.stripColor(correctUsage.getText()) + "\n");
 
         newLine.setHoverEvent(hoverEvent);

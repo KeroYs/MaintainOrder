@@ -1,32 +1,42 @@
 package com.github.multidestroy.i18n;
 
+import com.github.multidestroy.environment.TimeArgument;
+import jdk.nashorn.internal.ir.annotations.Immutable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
-@AllArgsConstructor
-public class SpecialTypeInfo {
+import java.util.Collections;
+import java.util.HashMap;
 
-    @Setter @Getter
-    private String receiver;
-    @Setter @Getter
-    private String giver;
-    @Setter @Getter
-    private String time;
-    @Setter @Getter
-    private String reason;
-    @Setter @Getter
-    private String leftTime;
-    @Setter @Getter
-    private String expirationDate;
+public class SpecialTypeInfo extends HashMap<String, String> {
 
-    public SpecialTypeInfo() {
-        receiver = "";
-        giver = "";
-        time = "";
-        reason = "";
-        leftTime = "";
-        expirationDate = "";
+    @AllArgsConstructor
+    public enum ArgType {
+        RECEIVER("receiver"),
+        GIVER("giver"),
+        TIME("time"),
+        REASON("reason"),
+        LEFT_TIME("left_time"),
+        EXPIRATION_DATE("expiration_date");
+
+        @Getter
+        private final String arg;
+    }
+
+    public SpecialTypeInfo(String receiver, String giver, String time, String reason) {
+        setValue(ArgType.RECEIVER, receiver);
+        setValue(ArgType.GIVER, giver);
+        setValue(ArgType.TIME, time);
+        setValue(ArgType.REASON, reason);
+    }
+
+    public void setValue(ArgType argType, String value) {
+        put(argType.getArg(), value);
+    }
+
+    public String getValue(ArgType argType) {
+        return getOrDefault(argType.getArg(), "");
     }
 
 }

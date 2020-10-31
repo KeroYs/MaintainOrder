@@ -1,10 +1,10 @@
-package com.github.multidestroy.eventhandlers;
+package com.github.multidestroy.listeners;
 
 import com.github.multidestroy.Config;
-import com.github.multidestroy.Main;
+import com.github.multidestroy.MainPluginClass;
 import com.github.multidestroy.Utils;
-import com.github.multidestroy.database.Database;
-import com.github.multidestroy.info.BanData;
+import com.github.multidestroy.environment.database.Database;
+import com.github.multidestroy.environment.database.BanData;
 import com.github.multidestroy.i18n.Messages;
 import com.github.multidestroy.i18n.SpecialType;
 import com.github.multidestroy.i18n.SpecialTypeInfo;
@@ -36,12 +36,12 @@ public class PlayerJoin implements Listener {
         this.playerMover = new HashMap<>();
     }
 
-
+/*
     //Blacklist
     @EventHandler
     public void onPreLogin(PreLoginEvent event) {
         if(database.isConnected()) {
-            event.registerIntent(Main.plugin);
+            event.registerIntent(MainPluginClass.plugin);
             switch (database.checkBan("blacklist", event.getConnection().getName(), event.getConnection().getSocketAddress().toString())) {
                 case -1:
                     kickFromServer(event, TextComponent.fromLegacyText(messages.getString("NORMAL.ERROR")));
@@ -53,7 +53,7 @@ public class PlayerJoin implements Listener {
                     )));
                     break;
             }
-            event.completeIntent(Main.plugin);
+            event.completeIntent(MainPluginClass.plugin);
         } else {
             event.setCancelled(true);
             ProxyServer.getInstance().getPlayer(event.getConnection().getName()).sendMessage(
@@ -75,7 +75,7 @@ public class PlayerJoin implements Listener {
                 ProxiedPlayer player = event.getPlayer();
                 if (playerMover.get(player.getName()) == null) {
                     event.setCancelled(true);
-                    Main.plugin.getProxy().getScheduler().runAsync(Main.plugin, () -> {
+                    MainPluginClass.plugin.getProxy().getScheduler().runAsync(MainPluginClass.plugin, () -> {
                         switch (database.checkBan(event.getTarget().getName(), player.getName(), player.getSocketAddress().toString())) {
                             case -1:
                                 player.sendMessage(TextComponent.fromLegacyText(messages.getString("NORMAL.ERROR")));
@@ -107,5 +107,5 @@ public class PlayerJoin implements Listener {
                    TextComponent.fromLegacyText(messages.getString("NORMAL.ERROR")
             ));
         }
-    }
+    }*/
 }

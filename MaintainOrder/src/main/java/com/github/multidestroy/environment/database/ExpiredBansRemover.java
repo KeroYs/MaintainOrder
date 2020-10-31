@@ -1,24 +1,23 @@
-package com.github.multidestroy.threads;
-
-import com.github.multidestroy.database.Database;
+package com.github.multidestroy.environment.database;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
-public class DeleteExpiredBans extends Thread {
+public class ExpiredBansRemover extends Thread {
 
     private final Database dataBase;
     private final String serverName;
     private static final long minimumBanTime = TimeUnit.MILLISECONDS.convert(1, TimeUnit.HOURS);
 
-    public DeleteExpiredBans(Database dataBase, String serverName) {
+    public ExpiredBansRemover(Database dataBase, String serverName) {
         this.dataBase = dataBase;
         this.serverName = serverName;
     }
 
     @Override
     public void run() {
+        //TODO add start method to the code and run it by scheduler
         boolean stopped = false;
         while (!stopped) {
             Instant now = Instant.now();
